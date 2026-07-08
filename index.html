@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diwan ديوان — The Cybersecurity Program Office</title>
+<meta name="description" content="Diwan (ديوان): a complete client-side cybersecurity program office — risk register with live heatmap, asset inventory, NIST CSF 2.0 maturity assessment, incident log, vendor register, action tracker, policy generator and executive reporting. No backend, your data never leaves the browser.">
+<meta name="author" content="Ali AlEnezi">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Instrument+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2312100E'/><path d='M25 72V38l25-14 25 14v34' fill='none' stroke='%23D9A441' stroke-width='6' stroke-linejoin='round'/><path d='M38 72V52h24v20' fill='none' stroke='%23D9A441' stroke-width='6' stroke-linejoin='round'/></svg>">
+<style>
+:root{
+  --bg:#12100E; --panel:#1A1713; --panel2:#211D18; --panel3:#2A241D;
+  --line:rgba(217,164,65,.13); --line2:rgba(217,164,65,.26);
+  --text:#EFE9DE; --muted:#A69A87; --faint:#6E634F;
+  --brass:#D9A441; --brass-deep:#8A6420; --brass-glow:rgba(217,164,65,.12);
+  --teal:#4FB8A2;
+  --low:#5CB85C; --med:#E2C044; --high:#E28A44; --crit:#D9534F;
+  --disp:'Fraunces',serif; --sans:'Instrument Sans',system-ui,sans-serif;
+  --mono:'Spline Sans Mono',ui-monospace,monospace; --amiri:'Amiri',serif;
+  --r:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--text)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+::placeholder{color:var(--faint)}
+
+/* ── shell ─────────────────────────── */
+.shell{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+.side{
+  border-right:1px solid var(--line);background:var(--panel);
+  padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.brand{display:flex;align-items:center;gap:11px;padding:2px 8px 18px}
+.brand .ar{font-family:var(--amiri);font-size:30px;color:var(--brass);line-height:1;transform:translateY(3px)}
+.brand .en{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.01em}
+.brand .en small{display:block;font-family:var(--mono);font-weight:400;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.navlab{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);padding:12px 10px 5px}
+.nav-btn{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:8px 10px;border-radius:8px;color:var(--muted);font-weight:500;font-size:13.5px;
+  border-left:2px solid transparent;
+}
+.nav-btn:hover{color:var(--text);background:var(--panel2)}
+.nav-btn.on{color:var(--brass);background:var(--brass-glow);border-left-color:var(--brass)}
+.nav-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;flex:none}
+.nav-btn .cnt{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.side .foot{margin-top:auto;padding:12px 10px 4px;font-size:11px;color:var(--faint);line-height:1.6}
+.side .foot a{color:var(--brass);text-decoration:none}
+.local-badge{
+  display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--teal);
+  border:1px solid rgba(79,184,162,.3);background:rgba(79,184,162,.06);border-radius:999px;padding:5px 10px;margin:10px 8px 0;
+}
+.local-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--teal)}
+
+/* ── main ──────────────────────────── */
+.main{padding:26px 30px 60px;max-width:1200px;width:100%}
+.page-head{display:flex;align-items:flex-end;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.page-head h1{font-family:var(--disp);font-weight:600;font-size:27px;letter-spacing:-.01em}
+.page-head .sub{color:var(--muted);font-size:13px;max-width:560px}
+.page-head .actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{
+  font-family:var(--mono);font-size:12px;padding:8px 14px;border-radius:var(--r);
+  border:1px solid var(--line2);background:var(--panel);color:var(--muted);transition:all .15s;
+}
+.btn:hover{color:var(--text);border-color:var(--brass-deep)}
+.btn.primary{color:#1A1204;background:var(--brass);border-color:var(--brass);font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger:hover{color:var(--crit);border-color:var(--crit)}
+.view{display:none}.view.on{display:block}
+
+/* cards & grids */
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+.card{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:16px}
+.card h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:10px;font-weight:500}
+.kpi .n{font-family:var(--disp);font-size:34px;font-weight:600;line-height:1;color:var(--brass)}
+.kpi .n.teal{color:var(--teal)}
+.kpi .d{color:var(--muted);font-size:12px;margin-top:6px}
+.kpi .spark{margin-top:8px;height:4px;border-radius:2px;background:var(--panel3);overflow:hidden}
+.kpi .spark i{display:block;height:100%;background:var(--brass)}
+
+/* tables */
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);text-align:left;padding:9px 12px;border-bottom:1px solid var(--line2);font-weight:500}
+td{padding:10px 12px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:top}
+tr:hover td{background:var(--panel2)}
+td .t2{color:var(--faint);font-size:11.5px;display:block;margin-top:1px}
+.pill{font-family:var(--mono);font-size:10.5px;padding:3px 9px;border-radius:999px;white-space:nowrap;border:1px solid}
+.pill.low{color:var(--low);border-color:var(--low);background:rgba(92,184,92,.08)}
+.pill.med{color:var(--med);border-color:var(--med);background:rgba(226,192,68,.08)}
+.pill.high{color:var(--high);border-color:var(--high);background:rgba(226,138,68,.08)}
+.pill.crit{color:var(--crit);border-color:var(--crit);background:rgba(217,83,79,.1)}
+.pill.dim{color:var(--muted);border-color:var(--line2)}
+.pill.teal{color:var(--teal);border-color:var(--teal);background:rgba(79,184,162,.07)}
+.rowact{display:flex;gap:4px;justify-content:flex-end}
+.mini-btn{font-family:var(--mono);font-size:10.5px;padding:3px 9px;border-radius:6px;border:1px solid var(--line);color:var(--faint)}
+.mini-btn:hover{color:var(--brass);border-color:var(--brass-deep)}
+.empty-tab{border:1px dashed var(--line2);border-radius:var(--r);padding:44px 24px;text-align:center;color:var(--faint);font-size:13px}
+.empty-tab b{display:block;font-family:var(--disp);font-size:17px;color:var(--muted);margin-bottom:6px;font-weight:600}
+
+/* heatmap */
+.heat-wrap{display:flex;gap:10px;align-items:flex-end}
+.heat{display:grid;grid-template-columns:repeat(5,46px);grid-auto-rows:46px;gap:5px}
+.heat .cell{
+  border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;color:#171106;
+}
+.heat .cell.z{color:transparent}
+.heat .cell:hover,.heat .cell.sel{border-color:var(--text);color:#171106}
+.heat .cell.z:hover{color:#17110677}
+.axis{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.1em;text-transform:uppercase}
+.axis.y{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center}
+.axis.x{text-align:center;margin-top:8px}
+
+/* controls (CSF) */
+.fn-block{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);margin-bottom:14px;overflow:hidden}
+.fn-head{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--panel2);border-bottom:1px solid var(--line)}
+.fn-head .fid{font-family:var(--mono);font-size:12px;color:var(--brass);border:1px solid var(--brass-deep);border-radius:6px;padding:2px 9px;background:var(--brass-glow)}
+.fn-head h3{font-size:15px;font-weight:600}
+.fn-head .avg{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.fn-bar{height:5px;background:var(--panel3)}
+.fn-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--brass-deep),var(--brass))}
+.catrow{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.catrow:last-child{border-bottom:none}
+.catrow .cid{font-family:var(--mono);font-size:11px;color:var(--faint);width:52px;flex:none}
+.catrow .cname{flex:1;min-width:0}
+.catrow .cname .d{color:var(--faint);font-size:11.5px}
+.score{display:flex;gap:4px}
+.score button{
+  width:26px;height:26px;border-radius:6px;border:1px solid var(--line2);
+  font-family:var(--mono);font-size:11.5px;color:var(--faint);
+}
+.score button:hover{border-color:var(--brass)}
+.score button.on{background:var(--brass);border-color:var(--brass);color:#1A1204;font-weight:600}
+
+/* policies */
+.pol-grid{display:grid;grid-template-columns:250px 1fr;gap:16px;align-items:start}
+.pol-list .pol-item{
+  width:100%;text-align:left;padding:11px 13px;border:1px solid var(--line);border-radius:var(--r);
+  background:var(--panel);margin-bottom:8px;color:var(--muted);font-weight:500;font-size:13.5px;
+}
+.pol-item:hover{color:var(--text);border-color:var(--line2)}
+.pol-item.on{color:var(--brass);border-color:var(--brass-deep);background:var(--brass-glow)}
+.pol-view{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:26px 30px}
+.pol-view h2{font-family:var(--disp);font-size:22px;font-weight:600;margin-bottom:2px}
+.pol-view .pm{font-family:var(--mono);font-size:11px;color:var(--faint);margin-bottom:18px}
+.pol-view h4{font-size:14px;font-weight:700;margin:16px 0 6px;color:var(--brass)}
+.pol-view ul{margin:0 0 6px 20px}
+.pol-view li{margin-bottom:5px;color:var(--text);font-size:13.5px}
+
+/* forms / modal */
+dialog{
+  border:1px solid var(--line2);border-radius:14px;background:var(--panel);color:var(--text);
+  width:min(560px,94vw);padding:0;
+}
+dialog::backdrop{background:rgba(6,5,3,.7);backdrop-filter:blur(3px)}
+.dlg-head{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
+.dlg-head h3{font-family:var(--disp);font-size:18px;font-weight:600}
+.dlg-head button{margin-left:auto;color:var(--faint);font-size:20px;line-height:1}
+.dlg-body{padding:18px 20px;display:grid;gap:13px;grid-template-columns:1fr 1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+.field label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.field input,.field select,.field textarea{
+  background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:9px 11px;outline:none;font-size:13.5px;
+}
+.field textarea{min-height:70px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brass)}
+.dlg-foot{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line)}
+
+/* report */
+.report{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:34px 40px}
+.report h2{font-family:var(--disp);font-size:24px;font-weight:600}
+.report h3{font-family:var(--disp);font-size:16px;font-weight:600;margin:22px 0 8px;color:var(--brass)}
+.report .rm{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.report p,.report li{font-size:13.5px;color:var(--text)}
+.report ul{margin-left:20px}
+
+#toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(70px);z-index:90;
+  font-family:var(--mono);font-size:12.5px;color:#1A1204;background:var(--brass);
+  padding:9px 16px;border-radius:8px;transition:transform .25s;font-weight:600;
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+.filterbar{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap;align-items:center}
+.filterbar input,.filterbar select{background:var(--panel);border:1px solid var(--line2);border-radius:8px;padding:7px 11px;font-size:13px;outline:none}
+.filterbar input:focus,.filterbar select:focus{border-color:var(--brass)}
+.note{font-size:12px;color:var(--faint)}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center}
+  .side .foot,.navlab{display:none}
+  .brand{padding-bottom:2px}
+  .main{padding:20px 16px 50px}
+  .pol-grid{grid-template-columns:1fr}
+}
+@media print{
+  .side,.page-head .actions,.filterbar,#toast{display:none!important}
+  body{background:#fff;color:#111}
+  .report,.card{border-color:#ccc;background:#fff}
+  .report h3,.kpi .n{color:#8a6420}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<aside class="side">
+  <div class="brand">
+    <span class="ar" aria-hidden="true">ديوان</span>
+    <span class="en">DIWAN<small>cybersecurity program office</small></span>
+  </div>
+  <div class="navlab">Oversee</div>
+  <button class="nav-btn on" data-view="dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</button>
+  <button class="nav-btn" data-view="report"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>Executive report</button>
+  <div class="navlab">Manage</div>
+  <button class="nav-btn" data-view="risks"><svg viewBox="0 0 24 24"><path d="M12 3 2.6 19.5A1.6 1.6 0 0 0 4 22h16a1.6 1.6 0 0 0 1.4-2.5z"/><path d="M12 9v5m0 3.5v.5"/></svg>Risk register<span class="cnt" id="cntRisks"></span></button>
+  <button class="nav-btn" data-view="assets"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8m-4-4v4"/></svg>Assets<span class="cnt" id="cntAssets"></span></button>
+  <button class="nav-btn" data-view="controls"><svg viewBox="0 0 24 24"><path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>Controls (CSF 2.0)</button>
+  <button class="nav-btn" data-view="incidents"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 3.5v.5"/></svg>Incidents<span class="cnt" id="cntInc"></span></button>
+  <button class="nav-btn" data-view="vendors"><svg viewBox="0 0 24 24"><path d="M3 9 5 4h14l2 5"/><path d="M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/></svg>Vendors<span class="cnt" id="cntVen"></span></button>
+  <button class="nav-btn" data-view="tasks"><svg viewBox="0 0 24 24"><path d="m4 12 4 4L20 6"/><path d="M4 19h16"/></svg>Action plan<span class="cnt" id="cntTasks"></span></button>
+  <div class="navlab">Produce</div>
+  <button class="nav-btn" data-view="policies"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M9 12h6M9 16h6M9 8h2"/></svg>Policy generator</button>
+  <button class="nav-btn" data-view="data"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Data & settings</button>
+  <div class="local-badge"><span class="dot"></span>All data stays in this browser</div>
+  <div class="foot">Built by <a href="https://3li.info" rel="noopener">Ali AlEnezi</a><br><a href="https://github.com/SiteQ8/Diwan" rel="noopener">github.com/SiteQ8/Diwan</a> · MIT</div>
+</aside>
+
+<main class="main">
+
+<!-- ═══════ DASHBOARD ═══════ -->
+<section class="view on" id="v-dashboard">
+  <div class="page-head">
+    <div><h1 id="dashTitle">Security posture</h1><div class="sub" id="dashSub">One page for leadership: where the program stands today.</div></div>
+    <div class="actions"><button class="btn" id="seedBtn">Load demo company</button><button class="btn primary" data-goto="report">Generate report</button></div>
+  </div>
+  <div class="grid g4" id="kpis"></div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card">
+      <h3>Risk heatmap — likelihood × impact</h3>
+      <div class="heat-wrap">
+        <div class="axis y">Impact →</div>
+        <div><div class="heat" id="dashHeat"></div><div class="axis x">Likelihood →</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Maturity by CSF 2.0 function</h3>
+      <div id="fnBars"></div>
+    </div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>Top open risks</h3><div id="topRisks"></div></div>
+    <div class="card"><h3>Due & overdue actions</h3><div id="dueTasks"></div></div>
+  </div>
+</section>
+
+<!-- ═══════ RISKS ═══════ -->
+<section class="view" id="v-risks">
+  <div class="page-head">
+    <div><h1>Risk register</h1><div class="sub">Inherent scoring on a 5×5 matrix. Click a heatmap cell to filter.</div></div>
+    <div class="actions"><button class="btn primary" id="addRisk">+ New risk</button></div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>Heatmap</h3>
+      <div class="heat-wrap">
+        <div class="axis y">Impact →</div>
+        <div><div class="heat" id="riskHeat"></div><div class="axis x">Likelihood →</div></div>
+      </div>
+    </div>
+    <div class="card"><h3>By treatment</h3><div id="treatSummary"></div></div>
+  </div>
+  <div class="filterbar">
+    <input id="riskQ" type="search" placeholder="Filter risks…">
+    <select id="riskStatusF"><option value="">All statuses</option><option>Open</option><option>In progress</option><option>Closed</option></select>
+    <button class="btn" id="riskClearF">Clear filters</button>
+    <span class="note" id="riskFNote"></span>
+  </div>
+  <div class="card" style="padding:0"><div id="riskTable"></div></div>
+</section>
+
+<!-- ═══════ ASSETS ═══════ -->
+<section class="view" id="v-assets">
+  <div class="page-head">
+    <div><h1>Asset inventory</h1><div class="sub">You can't protect what you haven't written down. Criticality drives risk context.</div></div>
+    <div class="actions"><button class="btn primary" id="addAsset">+ New asset</button></div>
+  </div>
+  <div class="card" style="padding:0"><div id="assetTable"></div></div>
+</section>
+
+<!-- ═══════ CONTROLS ═══════ -->
+<section class="view" id="v-controls">
+  <div class="page-head">
+    <div><h1>Controls assessment — NIST CSF 2.0</h1><div class="sub">Score each of the 22 categories 0–5. The overall posture score on the dashboard is derived live from this assessment.</div></div>
+    <div class="actions"><button class="btn" id="resetControls">Reset scores</button></div>
+  </div>
+  <div id="csfBlocks"></div>
+  <p class="note">Scale — 0 Not performed · 1 Ad-hoc · 2 Repeatable · 3 Defined · 4 Managed &amp; measured · 5 Optimized.</p>
+</section>
+
+<!-- ═══════ INCIDENTS ═══════ -->
+<section class="view" id="v-incidents">
+  <div class="page-head">
+    <div><h1>Incident log</h1><div class="sub">A lightweight register for tracking security incidents through containment to lessons learned.</div></div>
+    <div class="actions"><button class="btn primary" id="addInc">+ New incident</button></div>
+  </div>
+  <div class="card" style="padding:0"><div id="incTable"></div></div>
+</section>
+
+<!-- ═══════ VENDORS ═══════ -->
+<section class="view" id="v-vendors">
+  <div class="page-head">
+    <div><h1>Vendor register</h1><div class="sub">Third parties with access to your systems or data, tiered by risk, with review dates.</div></div>
+    <div class="actions"><button class="btn primary" id="addVen">+ New vendor</button></div>
+  </div>
+  <div class="card" style="padding:0"><div id="venTable"></div></div>
+</section>
+
+<!-- ═══════ TASKS ═══════ -->
+<section class="view" id="v-tasks">
+  <div class="page-head">
+    <div><h1>Action plan</h1><div class="sub">The living POA&amp;M: remediation actions from risks, audits and incidents, with owners and due dates.</div></div>
+    <div class="actions"><button class="btn primary" id="addTask">+ New action</button></div>
+  </div>
+  <div class="card" style="padding:0"><div id="taskTable"></div></div>
+</section>
+
+<!-- ═══════ POLICIES ═══════ -->
+<section class="view" id="v-policies">
+  <div class="page-head">
+    <div><h1>Policy generator</h1><div class="sub">Eight starter policies, auto-filled with your organization details from Data &amp; settings. Download as Markdown or print to PDF, then adapt to your context.</div></div>
+    <div class="actions"><button class="btn" id="polMd">Download .md</button><button class="btn primary" onclick="window.print()">Print / PDF</button></div>
+  </div>
+  <div class="pol-grid">
+    <div class="pol-list" id="polList"></div>
+    <div class="pol-view" id="polView"></div>
+  </div>
+</section>
+
+<!-- ═══════ REPORT ═══════ -->
+<section class="view" id="v-report">
+  <div class="page-head">
+    <div><h1>Executive report</h1><div class="sub">Board-ready summary generated from live data. Print to PDF and circulate.</div></div>
+    <div class="actions"><button class="btn primary" onclick="window.print()">Print / PDF</button></div>
+  </div>
+  <div class="report" id="reportBody"></div>
+</section>
+
+<!-- ═══════ DATA ═══════ -->
+<section class="view" id="v-data">
+  <div class="page-head">
+    <div><h1>Data &amp; settings</h1><div class="sub">Diwan stores everything in this browser only (localStorage). Export a JSON backup regularly — it's also how you move between machines or share with a colleague.</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>Organization</h3>
+      <div class="dlg-body" style="padding:4px 0 0">
+        <div class="field"><label>Organization name</label><input id="orgName" placeholder="Falcon Trading Co."></div>
+        <div class="field"><label>Security lead / CISO</label><input id="orgCiso" placeholder="Ali AlEnezi"></div>
+      </div>
+      <div style="margin-top:12px"><button class="btn primary" id="saveOrg">Save organization</button></div>
+    </div>
+    <div class="card">
+      <h3>Backup &amp; restore</h3>
+      <p class="note" style="margin-bottom:12px">Everything — risks, assets, controls, incidents, vendors, actions, settings — in one portable file.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn primary" id="exportBtn">Export JSON backup</button>
+        <button class="btn" id="importBtn">Import backup</button>
+        <input type="file" id="importFile" accept=".json" hidden>
+        <button class="btn danger" id="wipeBtn">Erase all data</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<dialog id="dlg">
+  <form method="dialog" id="dlgForm">
+    <div class="dlg-head"><h3 id="dlgTitle">Edit</h3><button type="button" id="dlgX" aria-label="Close">×</button></div>
+    <div class="dlg-body" id="dlgBody"></div>
+    <div class="dlg-foot"><button type="button" class="btn" id="dlgCancel">Cancel</button><button type="submit" class="btn primary" id="dlgSave">Save</button></div>
+  </form>
+</dialog>
+
+<div id="toast" role="status">Saved</div>
+
+<script>
+"use strict";
+/* ═══════════════ state ═══════════════ */
+const KEY='diwan-v1';
+const blank=()=>({org:{name:'',ciso:''},assets:[],risks:[],incidents:[],vendors:[],tasks:[],controls:{},updated:null});
+let S=blank();
+try{const raw=localStorage.getItem(KEY);if(raw)S={...blank(),...JSON.parse(raw)};}catch(e){}
+const save=()=>{S.updated=new Date().toISOString();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('Storage unavailable — export a backup');}counts();};
+const uid=()=>Math.random().toString(36).slice(2,9);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const today=()=>new Date().toISOString().slice(0,10);
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1500);}
+
+/* ═══════════════ reference data ═══════════════ */
+const CSF=[
+ {id:'GV',name:'Govern',cats:[
+  ['GV.OC','Organizational Context','Mission, stakeholders and legal/regulatory expectations are understood'],
+  ['GV.RM','Risk Management Strategy','Risk appetite, priorities and assumptions are established'],
+  ['GV.RR','Roles & Responsibilities','Cyber roles, responsibilities and authorities are set and communicated'],
+  ['GV.PO','Policy','Cybersecurity policy is established, communicated and enforced'],
+  ['GV.OV','Oversight','Strategy outcomes are reviewed to adjust the program'],
+  ['GV.SC','Supply Chain Risk','Third-party and supply-chain risk processes exist']]},
+ {id:'ID',name:'Identify',cats:[
+  ['ID.AM','Asset Management','Assets (data, hardware, software, services) are inventoried'],
+  ['ID.RA','Risk Assessment','Threats, vulnerabilities and impacts are assessed'],
+  ['ID.IM','Improvement','Lessons from assessments, tests and incidents drive improvement']]},
+ {id:'PR',name:'Protect',cats:[
+  ['PR.AA','Identity & Access','Identities are proofed; access is least-privilege with MFA'],
+  ['PR.AT','Awareness & Training','Personnel are trained for their cyber responsibilities'],
+  ['PR.DS','Data Security','Data at rest, in transit and in use is protected'],
+  ['PR.PS','Platform Security','Hardened configurations, patching, secure SDLC'],
+  ['PR.IR','Infrastructure Resilience','Networks and environments are protected and resilient']]},
+ {id:'DE',name:'Detect',cats:[
+  ['DE.CM','Continuous Monitoring','Assets and networks are monitored for anomalies'],
+  ['DE.AE','Adverse Event Analysis','Events are analyzed, correlated and declared as incidents']]},
+ {id:'RS',name:'Respond',cats:[
+  ['RS.MA','Incident Management','Responses are executed and coordinated'],
+  ['RS.AN','Analysis','Incidents are investigated and root causes found'],
+  ['RS.CO','Communication','Response is coordinated with internal & external parties'],
+  ['RS.MI','Mitigation','Incidents are contained and eradicated']]},
+ {id:'RC',name:'Recover',cats:[
+  ['RC.RP','Recovery Execution','Restoration plans are executed after incidents'],
+  ['RC.CO','Recovery Communication','Restoration is communicated and coordinated']]}
+];
+const ALL_CATS=CSF.flatMap(f=>f.cats.map(c=>c[0]));
+
+const band=s=>s>=16?'crit':s>=10?'high':s>=5?'med':'low';
+const bandName={low:'Low',med:'Medium',high:'High',crit:'Critical'};
+const bandColor={low:'var(--low)',med:'var(--med)',high:'var(--high)',crit:'var(--crit)'};
+
+/* ═══════════════ router ═══════════════ */
+const renderers={};
+function go(view){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.view===view));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+view));
+  (renderers[view]||(()=>{}))();
+}
+document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>go(b.dataset.view));
+document.addEventListener('click',e=>{const g=e.target.closest('[data-goto]');if(g)go(g.dataset.goto);});
+
+function counts(){
+  $('cntRisks').textContent=S.risks.filter(r=>r.status!=='Closed').length||'';
+  $('cntAssets').textContent=S.assets.length||'';
+  $('cntInc').textContent=S.incidents.filter(i=>i.status!=='Resolved').length||'';
+  $('cntVen').textContent=S.vendors.length||'';
+  $('cntTasks').textContent=S.tasks.filter(t=>t.status!=='Done').length||'';
+}
+
+/* ═══════════════ modal form engine ═══════════════ */
+let dlgSaveFn=null;
+function openForm(title,fields,values,onSave){
+  $('dlgTitle').textContent=title;
+  $('dlgBody').innerHTML=fields.map(f=>{
+    const v=esc(values[f.k]??f.def??'');
+    let inp='';
+    if(f.type==='select') inp=`<select name="${f.k}">${f.opts.map(o=>`<option ${o===String(values[f.k]??f.def)?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+    else if(f.type==='textarea') inp=`<textarea name="${f.k}">${v}</textarea>`;
+    else inp=`<input name="${f.k}" type="${f.type||'text'}" value="${v}" ${f.req?'required':''}>`;
+    return `<div class="field ${f.full?'full':''}"><label>${esc(f.label)}</label>${inp}</div>`;
+  }).join('');
+  dlgSaveFn=onSave;
+  $('dlg').showModal();
+}
+$('dlgForm').onsubmit=e=>{
+  const fd=new FormData($('dlgForm'));
+  dlgSaveFn(Object.fromEntries(fd.entries()));
+  $('dlg').close();
+};
+$('dlgX').onclick=$('dlgCancel').onclick=()=>$('dlg').close();
+
+function crudTable(el,items,cols,onEdit,onDel,emptyMsg){
+  if(!items.length){el.innerHTML=`<div class="empty-tab"><b>Nothing here yet</b>${emptyMsg}</div>`;return;}
+  el.innerHTML=`<table><thead><tr>${cols.map(c=>`<th>${c[0]}</th>`).join('')}<th></th></tr></thead><tbody>${
+    items.map(it=>`<tr>${cols.map(c=>`<td>${c[1](it)}</td>`).join('')}<td class="rowact">
+      <button class="mini-btn" data-e="${it.id}">Edit</button><button class="mini-btn" data-d="${it.id}">Del</button></td></tr>`).join('')
+  }</tbody></table>`;
+  el.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>onEdit(b.dataset.e));
+  el.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{if(confirm('Delete this entry?')){onDel(b.dataset.d);}});
+}
+
+/* ═══════════════ RISKS ═══════════════ */
+const riskFields=()=>[
+  {k:'title',label:'Risk title',req:1,full:1},
+  {k:'category',label:'Category',type:'select',opts:['Cyber attack','Data breach','Availability','Third-party','Compliance','Insider','Physical','Fraud','Other']},
+  {k:'assetId',label:'Related asset',type:'select',opts:['—',...S.assets.map(a=>a.name)]},
+  {k:'likelihood',label:'Likelihood (1–5)',type:'select',opts:['1','2','3','4','5'],def:'3'},
+  {k:'impact',label:'Impact (1–5)',type:'select',opts:['1','2','3','4','5'],def:'3'},
+  {k:'treatment',label:'Treatment',type:'select',opts:['Mitigate','Accept','Transfer','Avoid']},
+  {k:'owner',label:'Owner'},
+  {k:'status',label:'Status',type:'select',opts:['Open','In progress','Closed']},
+  {k:'due',label:'Target date',type:'date'},
+  {k:'notes',label:'Notes / current controls',type:'textarea',full:1},
+];
+let riskCellFilter=null;
+function riskScore(r){return (+r.likelihood)*(+r.impact);}
+function riskForm(existing){
+  openForm(existing?'Edit risk':'New risk',riskFields(),existing||{},d=>{
+    if(existing)Object.assign(existing,d);
+    else S.risks.push({id:uid(),created:today(),...d});
+    save();renderers.risks();renderers.dashboard();toast('Risk saved');
+  });
+}
+$('addRisk').onclick=()=>riskForm(null);
+$('riskQ').oninput=$('riskStatusF').onchange=()=>renderers.risks();
+$('riskClearF').onclick=()=>{$('riskQ').value='';$('riskStatusF').value='';riskCellFilter=null;renderers.risks();};
+
+function heatmap(el,risks,clickable){
+  let html='';
+  for(let imp=5;imp>=1;imp--){
+    for(let lik=1;lik<=5;lik++){
+      const n=risks.filter(r=>+r.likelihood===lik&&+r.impact===imp&&r.status!=='Closed').length;
+      const b=band(lik*imp);
+      const sel=riskCellFilter&&riskCellFilter[0]===lik&&riskCellFilter[1]===imp;
+      html+=`<div class="cell ${n?'':'z'} ${sel?'sel':''}" data-l="${lik}" data-i="${imp}"
+        style="background:color-mix(in srgb, ${bandColor[b]} ${n?85:26}%, var(--panel3))"
+        title="L${lik} × I${imp} = ${lik*imp} (${bandName[b]}) — ${n} risk(s)">${n||'·'}</div>`;
+    }
+  }
+  el.innerHTML=html;
+  if(clickable)el.querySelectorAll('.cell').forEach(c=>c.onclick=()=>{
+    const f=[+c.dataset.l,+c.dataset.i];
+    riskCellFilter=(riskCellFilter&&riskCellFilter[0]===f[0]&&riskCellFilter[1]===f[1])?null:f;
+    renderers.risks();
+  });
+}
+
+renderers.risks=()=>{
+  heatmap($('riskHeat'),S.risks,true);
+  const t={};S.risks.forEach(r=>{if(r.status!=='Closed')t[r.treatment]=(t[r.treatment]||0)+1;});
+  $('treatSummary').innerHTML=Object.keys(t).length
+    ?Object.entries(t).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(k)}</span><b style="font-family:var(--mono);color:var(--brass)">${v}</b></div>`).join('')
+    :'<p class="note">No open risks.</p>';
+  const q=$('riskQ').value.toLowerCase(),st=$('riskStatusF').value;
+  let list=S.risks.slice().sort((a,b)=>riskScore(b)-riskScore(a));
+  if(q)list=list.filter(r=>(r.title+' '+r.category+' '+(r.owner||'')).toLowerCase().includes(q));
+  if(st)list=list.filter(r=>r.status===st);
+  if(riskCellFilter)list=list.filter(r=>+r.likelihood===riskCellFilter[0]&&+r.impact===riskCellFilter[1]);
+  $('riskFNote').textContent=riskCellFilter?`Filtered to L${riskCellFilter[0]} × I${riskCellFilter[1]}`:'';
+  crudTable($('riskTable'),list,[
+    ['Risk',r=>`${esc(r.title)}<span class="t2">${esc(r.category)}${r.assetId&&r.assetId!=='—'?' · '+esc(r.assetId):''}</span>`],
+    ['Score',r=>{const s=riskScore(r),b=band(s);return `<span class="pill ${b}">${s} ${bandName[b]}</span>`}],
+    ['L × I',r=>`<span style="font-family:var(--mono)">${r.likelihood} × ${r.impact}</span>`],
+    ['Treatment',r=>`<span class="pill dim">${esc(r.treatment)}</span>`],
+    ['Owner',r=>esc(r.owner||'—')],
+    ['Status',r=>`<span class="pill ${r.status==='Closed'?'teal':'dim'}">${esc(r.status)}</span>`],
+    ['Due',r=>esc(r.due||'—')],
+  ],id=>riskForm(S.risks.find(r=>r.id===id)),
+    id=>{S.risks=S.risks.filter(r=>r.id!==id);save();renderers.risks();},
+    'Add your first risk, or load the demo company from the dashboard.');
+};
+
+/* ═══════════════ ASSETS ═══════════════ */
+const assetFields=[
+  {k:'name',label:'Asset name',req:1,full:1},
+  {k:'type',label:'Type',type:'select',opts:['Application','Server / VM','SaaS service','Database','Network device','Endpoint fleet','Data set','Facility','People / team','Other']},
+  {k:'owner',label:'Owner'},
+  {k:'crit',label:'Criticality',type:'select',opts:['Critical','High','Medium','Low'],def:'Medium'},
+  {k:'notes',label:'Notes',type:'textarea',full:1},
+];
+function assetForm(ex){openForm(ex?'Edit asset':'New asset',assetFields,ex||{},d=>{
+  if(ex)Object.assign(ex,d);else S.assets.push({id:uid(),...d});
+  save();renderers.assets();toast('Asset saved');});}
+$('addAsset').onclick=()=>assetForm(null);
+const critPill=c=>({Critical:'crit',High:'high',Medium:'med',Low:'low'})[c]||'dim';
+renderers.assets=()=>crudTable($('assetTable'),S.assets,[
+  ['Asset',a=>`${esc(a.name)}<span class="t2">${esc(a.notes||'')}</span>`],
+  ['Type',a=>esc(a.type)],
+  ['Owner',a=>esc(a.owner||'—')],
+  ['Criticality',a=>`<span class="pill ${critPill(a.crit)}">${esc(a.crit)}</span>`],
+],id=>assetForm(S.assets.find(a=>a.id===id)),
+  id=>{S.assets=S.assets.filter(a=>a.id!==id);save();renderers.assets();},
+  'List the systems, data and services your business depends on.');
+
+/* ═══════════════ CONTROLS ═══════════════ */
+renderers.controls=()=>{
+  $('csfBlocks').innerHTML=CSF.map(fn=>{
+    const scores=fn.cats.map(c=>S.controls[c[0]]??0);
+    const avg=scores.reduce((a,b)=>a+b,0)/fn.cats.length;
+    return `<div class="fn-block">
+      <div class="fn-head"><span class="fid">${fn.id}</span><h3>${fn.name}</h3><span class="avg">${avg.toFixed(1)} / 5</span></div>
+      <div class="fn-bar"><i style="width:${avg/5*100}%"></i></div>
+      ${fn.cats.map(c=>`<div class="catrow">
+        <span class="cid">${c[0]}</span>
+        <span class="cname">${c[1]}<div class="d">${c[2]}</div></span>
+        <span class="score" data-cat="${c[0]}">${[0,1,2,3,4,5].map(n=>
+          `<button type="button" class="${(S.controls[c[0]]??0)===n?'on':''}" data-n="${n}">${n}</button>`).join('')}</span>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+  $('csfBlocks').querySelectorAll('.score button').forEach(b=>b.onclick=()=>{
+    S.controls[b.parentElement.dataset.cat]=+b.dataset.n;save();renderers.controls();
+  });
+};
+$('resetControls').onclick=()=>{if(confirm('Reset all control scores to 0?')){S.controls={};save();renderers.controls();}};
+
+const posture=()=>{
+  const vals=ALL_CATS.map(c=>S.controls[c]??0);
+  return Math.round(vals.reduce((a,b)=>a+b,0)/(vals.length*5)*100);
+};
+
+/* ═══════════════ INCIDENTS ═══════════════ */
+const incFields=[
+  {k:'title',label:'Incident title',req:1,full:1},
+  {k:'sev',label:'Severity',type:'select',opts:['Critical','High','Medium','Low'],def:'Medium'},
+  {k:'status',label:'Status',type:'select',opts:['Open','Contained','Resolved']},
+  {k:'date',label:'Detected on',type:'date',def:today()},
+  {k:'owner',label:'Lead responder'},
+  {k:'summary',label:'Summary / timeline notes',type:'textarea',full:1},
+];
+function incForm(ex){openForm(ex?'Edit incident':'New incident',incFields,ex||{},d=>{
+  if(ex)Object.assign(ex,d);else S.incidents.push({id:uid(),...d});
+  save();renderers.incidents();toast('Incident saved');});}
+$('addInc').onclick=()=>incForm(null);
+renderers.incidents=()=>crudTable($('incTable'),S.incidents.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')),[
+  ['Incident',i=>`${esc(i.title)}<span class="t2">${esc(i.summary||'')}</span>`],
+  ['Severity',i=>`<span class="pill ${critPill(i.sev)}">${esc(i.sev)}</span>`],
+  ['Status',i=>`<span class="pill ${i.status==='Resolved'?'teal':i.status==='Contained'?'med':'crit'}">${esc(i.status)}</span>`],
+  ['Detected',i=>esc(i.date||'—')],
+  ['Lead',i=>esc(i.owner||'—')],
+],id=>incForm(S.incidents.find(i=>i.id===id)),
+  id=>{S.incidents=S.incidents.filter(i=>i.id!==id);save();renderers.incidents();},
+  'When something happens, log it here — severity, status, lead, timeline.');
+
+/* ═══════════════ VENDORS ═══════════════ */
+const venFields=[
+  {k:'name',label:'Vendor',req:1},
+  {k:'service',label:'Service provided'},
+  {k:'access',label:'Access level',type:'select',opts:['No data access','Business data','Sensitive / regulated data','Privileged system access']},
+  {k:'tier',label:'Risk tier',type:'select',opts:['Critical','High','Medium','Low'],def:'Medium'},
+  {k:'review',label:'Next review',type:'date'},
+  {k:'notes',label:'Notes / contract refs',type:'textarea',full:1},
+];
+function venForm(ex){openForm(ex?'Edit vendor':'New vendor',venFields,ex||{},d=>{
+  if(ex)Object.assign(ex,d);else S.vendors.push({id:uid(),...d});
+  save();renderers.vendors();toast('Vendor saved');});}
+$('addVen').onclick=()=>venForm(null);
+renderers.vendors=()=>crudTable($('venTable'),S.vendors,[
+  ['Vendor',v=>`${esc(v.name)}<span class="t2">${esc(v.service||'')}</span>`],
+  ['Access',v=>esc(v.access||'—')],
+  ['Tier',v=>`<span class="pill ${critPill(v.tier)}">${esc(v.tier)}</span>`],
+  ['Next review',v=>esc(v.review||'—')],
+],id=>venForm(S.vendors.find(v=>v.id===id)),
+  id=>{S.vendors=S.vendors.filter(v=>v.id!==id);save();renderers.vendors();},
+  'Track every third party that touches your systems or data.');
+
+/* ═══════════════ TASKS ═══════════════ */
+const taskFields=[
+  {k:'title',label:'Action',req:1,full:1},
+  {k:'linked',label:'Linked to (risk / control / incident)'},
+  {k:'owner',label:'Owner'},
+  {k:'priority',label:'Priority',type:'select',opts:['Critical','High','Medium','Low'],def:'Medium'},
+  {k:'due',label:'Due date',type:'date'},
+  {k:'status',label:'Status',type:'select',opts:['To do','In progress','Done']},
+];
+function taskForm(ex){openForm(ex?'Edit action':'New action',taskFields,ex||{},d=>{
+  if(ex)Object.assign(ex,d);else S.tasks.push({id:uid(),...d});
+  save();renderers.tasks();toast('Action saved');});}
+$('addTask').onclick=()=>taskForm(null);
+const overdue=t=>t.due&&t.status!=='Done'&&t.due<today();
+renderers.tasks=()=>crudTable($('taskTable'),S.tasks.slice().sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')),[
+  ['Action',t=>`${esc(t.title)}<span class="t2">${esc(t.linked||'')}</span>`],
+  ['Owner',t=>esc(t.owner||'—')],
+  ['Priority',t=>`<span class="pill ${critPill(t.priority)}">${esc(t.priority)}</span>`],
+  ['Due',t=>overdue(t)?`<span class="pill crit">${esc(t.due)} overdue</span>`:esc(t.due||'—')],
+  ['Status',t=>`<span class="pill ${t.status==='Done'?'teal':'dim'}">${esc(t.status)}</span>`],
+],id=>taskForm(S.tasks.find(t=>t.id===id)),
+  id=>{S.tasks=S.tasks.filter(t=>t.id!==id);save();renderers.tasks();},
+  'Every risk decision and audit finding becomes an action with an owner and a date.');
+
+/* ═══════════════ DASHBOARD ═══════════════ */
+renderers.dashboard=()=>{
+  $('dashTitle').textContent=S.org.name?`${S.org.name} — security posture`:'Security posture';
+  const openR=S.risks.filter(r=>r.status!=='Closed');
+  const hiR=openR.filter(r=>riskScore(r)>=10).length;
+  const openI=S.incidents.filter(i=>i.status!=='Resolved').length;
+  const od=S.tasks.filter(overdue).length;
+  const p=posture();
+  $('kpis').innerHTML=`
+    <div class="card kpi"><h3>Posture score</h3><div class="n">${p}%</div><div class="d">avg CSF 2.0 maturity</div><div class="spark"><i style="width:${p}%"></i></div></div>
+    <div class="card kpi"><h3>Open risks</h3><div class="n">${openR.length}</div><div class="d">${hiR} high or critical</div></div>
+    <div class="card kpi"><h3>Open incidents</h3><div class="n ${openI?'':'teal'}">${openI}</div><div class="d">${openI?'need attention':'all clear'}</div></div>
+    <div class="card kpi"><h3>Overdue actions</h3><div class="n ${od?'':'teal'}">${od}</div><div class="d">of ${S.tasks.filter(t=>t.status!=='Done').length} open actions</div></div>`;
+  heatmap($('dashHeat'),S.risks,false);
+  $('fnBars').innerHTML=CSF.map(fn=>{
+    const avg=fn.cats.reduce((a,c)=>a+(S.controls[c[0]]??0),0)/fn.cats.length;
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">
+      <span style="font-family:var(--mono);font-size:11px;width:64px;color:var(--muted)">${fn.id} ${fn.name}</span>
+      <div style="flex:1;height:9px;border-radius:5px;background:var(--panel3);overflow:hidden"><i style="display:block;height:100%;width:${avg/5*100}%;background:linear-gradient(90deg,var(--brass-deep),var(--brass))"></i></div>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--faint);width:26px;text-align:right">${avg.toFixed(1)}</span></div>`;
+  }).join('');
+  const top=openR.slice().sort((a,b)=>riskScore(b)-riskScore(a)).slice(0,5);
+  $('topRisks').innerHTML=top.length?top.map(r=>{const s=riskScore(r),b=band(s);
+    return `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)">
+      <span class="pill ${b}">${s}</span><span style="flex:1">${esc(r.title)}</span>
+      <span class="note">${esc(r.owner||'')}</span></div>`;}).join('')
+    :'<p class="note">No open risks — add some in the risk register.</p>';
+  const due=S.tasks.filter(t=>t.status!=='Done'&&t.due).sort((a,b)=>a.due.localeCompare(b.due)).slice(0,5);
+  $('dueTasks').innerHTML=due.length?due.map(t=>`<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)">
+      <span class="pill ${overdue(t)?'crit':'dim'}">${esc(t.due)}</span><span style="flex:1">${esc(t.title)}</span>
+      <span class="note">${esc(t.owner||'')}</span></div>`).join('')
+    :'<p class="note">No dated actions.</p>';
+};
+
+/* ═══════════════ POLICIES ═══════════════ */
+const POLICIES=[
+ {id:'aup',name:'Acceptable Use',secs:[
+  ['Purpose',['Define acceptable use of {{ORG}} information systems, devices and data by all personnel and contractors.']],
+  ['Rules',['Company systems are for business purposes; limited personal use must never interfere with duties or security.','Users must not disable security tooling, install unauthorized software, or connect unapproved devices.','Company data must not be stored in personal cloud, email or messaging accounts.','Credentials are individual and must never be shared; suspected compromise is reported immediately.','Illegal content, harassment and attempts to bypass access controls are prohibited.']],
+  ['Enforcement',['Violations may lead to disciplinary action up to termination and legal referral. Exceptions require written approval from {{CISO}}.']]]},
+ {id:'pwd',name:'Password & Authentication',secs:[
+  ['Purpose',['Set authentication requirements for all {{ORG}} accounts and systems.']],
+  ['Rules',['Minimum length 14 characters (passphrases encouraged); screened against known-breached lists.','Multi-factor authentication is mandatory for email, remote access, admin accounts and cloud consoles.','Default and vendor-supplied passwords are changed before production use.','Privileged accounts are separate from daily-use accounts and vaulted where possible.','Accounts lock after repeated failures; sessions time out on inactivity.']],
+  ['Enforcement',['System owners enforce these settings technically. Exceptions require documented risk acceptance approved by {{CISO}}.']]]},
+ {id:'ir',name:'Incident Response',secs:[
+  ['Purpose',['Ensure {{ORG}} detects, contains and recovers from security incidents in a consistent, documented way.']],
+  ['Rules',['Anyone suspecting an incident reports it immediately to {{CISO}}; no fear of blame for good-faith reporting.','Incidents are triaged by severity; Critical/High trigger the response team within 1 hour.','Containment takes priority over investigation convenience; evidence is preserved.','Regulatory, customer and law-enforcement notifications follow legal requirements and contracts.','Every Critical/High incident ends with a lessons-learned review and tracked actions.']],
+  ['Enforcement',['This policy is exercised at least annually via tabletop. The incident log in Diwan (or equivalent) is the register of record.']]]},
+ {id:'bkp',name:'Backup & Recovery',secs:[
+  ['Purpose',['Guarantee {{ORG}} can restore critical data and services after loss, corruption or ransomware.']],
+  ['Rules',['Critical systems and data are identified with defined RPO/RTO targets.','Backups follow 3-2-1: three copies, two media, one offline/immutable or off-site.','Backup credentials and consoles are separated from production domains and protected with MFA.','Restores are tested at least quarterly for critical systems; results are recorded.','Backup scope is reviewed whenever systems are added or changed.']],
+  ['Enforcement',['IT operations owns execution; {{CISO}} reviews test evidence quarterly.']]]},
+ {id:'ac',name:'Access Control',secs:[
+  ['Purpose',['Ensure access to {{ORG}} systems and data follows least privilege and need-to-know.']],
+  ['Rules',['Access is requested, approved and provisioned via a documented workflow tied to job role.','Joiner/mover/leaver events change access same-day; leavers are disabled before exit.','Privileged access is time-bound where feasible and always logged.','Access rights are recertified at least twice a year by system owners.','Shared and generic accounts are prohibited except documented, compensated exceptions.']],
+  ['Enforcement',['HR and IT jointly own the JML process; recertification evidence is retained for audit.']]]},
+ {id:'rw',name:'Remote Work',secs:[
+  ['Purpose',['Secure {{ORG}} information when personnel work outside company premises.']],
+  ['Rules',['Remote access is via company-approved VPN/zero-trust with MFA only.','Devices used for work are encrypted, screen-locked, patched and running approved endpoint protection.','Sensitive conversations and screens are protected in public spaces; public Wi-Fi requires the VPN.','Household members must not use company devices or accounts.','Lost or stolen devices are reported within 4 hours for remote wipe.']],
+  ['Enforcement',['Non-compliant devices may be blocked from company resources without notice.']]]},
+ {id:'vm',name:'Vendor & Third-Party Security',secs:[
+  ['Purpose',['Manage the security risk of vendors and service providers with access to {{ORG}} systems or data.']],
+  ['Rules',['Vendors are risk-tiered before onboarding based on data access and business criticality.','Contracts include security, confidentiality, breach-notification and audit clauses.','Critical/High vendors are reassessed at least annually; findings become tracked actions.','Vendor access is least-privilege, individually attributed, and removed at contract end.','Sub-outsourcing of {{ORG}} data requires prior written approval.']],
+  ['Enforcement',['Procurement must not sign without security review for tiers Critical/High. The vendor register in Diwan (or equivalent) is the register of record.']]]},
+ {id:'dc',name:'Data Classification & Handling',secs:[
+  ['Purpose',['Ensure {{ORG}} information receives protection proportionate to its sensitivity.']],
+  ['Rules',['Data is classified as Public, Internal, Confidential or Restricted; owners assign the level.','Confidential/Restricted data is encrypted at rest and in transit and shared strictly need-to-know.','Restricted data must not leave approved systems; personal-device storage is prohibited.','Retention follows legal and business schedules; disposal is secure and documented.','Classification is reviewed when data is created, received or repurposed.']],
+  ['Enforcement',['Data owners are accountable; mishandling of Restricted data is treated as a security incident.']]]},
+];
+let polSel='aup';
+function polFill(t){return t.replaceAll('{{ORG}}',S.org.name||'[Organization]').replaceAll('{{CISO}}',S.org.ciso||'the security lead');}
+renderers.policies=()=>{
+  $('polList').innerHTML=POLICIES.map(p=>`<button class="pol-item ${p.id===polSel?'on':''}" data-p="${p.id}">${p.name} Policy</button>`).join('');
+  $('polList').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{polSel=b.dataset.p;renderers.policies();});
+  const p=POLICIES.find(x=>x.id===polSel);
+  $('polView').innerHTML=`<h2>${p.name} Policy</h2>
+    <div class="pm">${esc(S.org.name||'[Organization]')} · Owner: ${esc(S.org.ciso||'Security lead')} · Version 1.0 · ${today()}</div>
+    ${p.secs.map(s=>`<h4>${s[0]}</h4><ul>${s[1].map(li=>`<li>${esc(polFill(li))}</li>`).join('')}</ul>`).join('')}
+    <p class="note" style="margin-top:14px">Starter template — adapt to your legal, regulatory and business context before adoption.</p>`;
+};
+$('polMd').onclick=()=>{
+  const p=POLICIES.find(x=>x.id===polSel);
+  const md=`# ${p.name} Policy\n\n**${S.org.name||'[Organization]'}** · Owner: ${S.org.ciso||'Security lead'} · v1.0 · ${today()}\n\n`+
+    p.secs.map(s=>`## ${s[0]}\n\n`+s[1].map(li=>`- ${polFill(li)}`).join('\n')).join('\n\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));
+  a.download=`${p.id}-policy.md`;a.click();URL.revokeObjectURL(a.href);
+};
+
+/* ═══════════════ REPORT ═══════════════ */
+renderers.report=()=>{
+  const openR=S.risks.filter(r=>r.status!=='Closed');
+  const top=openR.slice().sort((a,b)=>riskScore(b)-riskScore(a)).slice(0,5);
+  const weakest=CSF.map(fn=>({fn,avg:fn.cats.reduce((a,c)=>a+(S.controls[c[0]]??0),0)/fn.cats.length}))
+    .sort((a,b)=>a.avg-b.avg).slice(0,2);
+  const openI=S.incidents.filter(i=>i.status!=='Resolved');
+  $('reportBody').innerHTML=`
+    <h2>Cybersecurity status report${S.org.name?' — '+esc(S.org.name):''}</h2>
+    <div class="rm">Prepared by ${esc(S.org.ciso||'Security lead')} · Generated ${today()} · Diwan</div>
+    <h3>Posture</h3>
+    <p>Overall control maturity stands at <b>${posture()}%</b> across the 22 NIST CSF 2.0 categories.
+    The weakest functions are <b>${weakest.map(w=>w.fn.name+' ('+w.avg.toFixed(1)+'/5)').join('</b> and <b>')}</b>, which should anchor next quarter's roadmap.</p>
+    <h3>Risk</h3>
+    <p>${openR.length} risks are open, of which <b>${openR.filter(r=>riskScore(r)>=16).length} critical</b> and <b>${openR.filter(r=>{const s=riskScore(r);return s>=10&&s<16;}).length} high</b>. Top exposures:</p>
+    <ul>${top.map(r=>`<li><b>${esc(r.title)}</b> — score ${riskScore(r)} (${bandName[band(riskScore(r))]}), treatment: ${esc(r.treatment)}, owner: ${esc(r.owner||'unassigned')}</li>`).join('')||'<li>No open risks recorded.</li>'}</ul>
+    <h3>Incidents</h3>
+    <p>${openI.length?`${openI.length} incident(s) currently open: ${openI.map(i=>esc(i.title)+' ('+esc(i.sev)+')').join('; ')}.`:'No incidents currently open.'} ${S.incidents.length} recorded in total.</p>
+    <h3>Actions</h3>
+    <p>${S.tasks.filter(t=>t.status!=='Done').length} remediation actions open, <b>${S.tasks.filter(overdue).length} overdue</b>. ${S.vendors.length} third parties tracked in the vendor register (${S.vendors.filter(v=>v.tier==='Critical'||v.tier==='High').length} high/critical tier).</p>
+    <h3>Asks</h3>
+    <p>Leadership attention is requested on the overdue actions above and on resourcing for the two weakest CSF functions.</p>`;
+};
+
+/* ═══════════════ DATA ═══════════════ */
+renderers.data=()=>{$('orgName').value=S.org.name||'';$('orgCiso').value=S.org.ciso||'';};
+$('saveOrg').onclick=()=>{S.org.name=$('orgName').value.trim();S.org.ciso=$('orgCiso').value.trim();save();toast('Organization saved');};
+$('exportBtn').onclick=()=>{
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify({tool:'Diwan',version:1,exported:new Date().toISOString(),data:S},null,2)],{type:'application/json'}));
+  a.download=`diwan-backup-${today()}.json`;a.click();URL.revokeObjectURL(a.href);toast('Backup exported');
+};
+$('importBtn').onclick=()=>$('importFile').click();
+$('importFile').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  f.text().then(t=>{
+    try{const j=JSON.parse(t);const d=j.data||j;
+      if(!d.risks||!d.assets)throw 0;
+      S={...blank(),...d};save();go('dashboard');toast('Backup imported');
+    }catch(err){toast('Not a valid Diwan backup');}
+  });
+};
+$('wipeBtn').onclick=()=>{if(confirm('Erase ALL Diwan data in this browser? Export a backup first.')){S=blank();save();go('dashboard');toast('All data erased');}};
+
+/* ═══════════════ DEMO SEED ═══════════════ */
+$('seedBtn').onclick=()=>{
+  if((S.risks.length||S.assets.length)&&!confirm('Replace current data with the demo company?'))return;
+  const d=today();const plus=n=>{const x=new Date();x.setDate(x.getDate()+n);return x.toISOString().slice(0,10);};
+  S=blank();
+  S.org={name:'Falcon Trading Co.',ciso:'Ali AlEnezi'};
+  S.assets=[
+    {id:uid(),name:'ERP (SAP S/4)',type:'Application',owner:'IT Apps',crit:'Critical',notes:'Finance, procurement, payroll'},
+    {id:uid(),name:'Customer database',type:'Database',owner:'Data team',crit:'Critical',notes:'PII — 120k records'},
+    {id:uid(),name:'Microsoft 365 tenant',type:'SaaS service',owner:'IT Ops',crit:'Critical',notes:'Email, files, Teams'},
+    {id:uid(),name:'E-commerce storefront',type:'Application',owner:'Digital',crit:'High',notes:'Public web + payment gateway'},
+    {id:uid(),name:'Head-office network',type:'Network device',owner:'IT Ops',crit:'High',notes:'FW cluster, core switches'},
+    {id:uid(),name:'Laptop fleet (340)',type:'Endpoint fleet',owner:'IT Ops',crit:'Medium',notes:'Win 11 + EDR'},
+  ];
+  S.risks=[
+    {id:uid(),title:'Ransomware via phishing on finance team',category:'Cyber attack',assetId:'ERP (SAP S/4)',likelihood:'4',impact:'5',treatment:'Mitigate',owner:'CISO',status:'Open',due:plus(45),notes:'EDR deployed; awareness campaign running; backups not yet immutable'},
+    {id:uid(),title:'Customer PII breach via storefront vulnerability',category:'Data breach',assetId:'E-commerce storefront',likelihood:'3',impact:'5',treatment:'Mitigate',owner:'Digital lead',status:'In progress',due:plus(30),notes:'WAF in place; pentest scheduled'},
+    {id:uid(),title:'M365 account takeover — MFA gaps for contractors',category:'Cyber attack',assetId:'Microsoft 365 tenant',likelihood:'4',impact:'4',treatment:'Mitigate',owner:'IT Ops',status:'Open',due:plus(20),notes:'Legacy auth still enabled for 2 apps'},
+    {id:uid(),title:'ERP outage from single-site hosting',category:'Availability',assetId:'ERP (SAP S/4)',likelihood:'2',impact:'5',treatment:'Transfer',owner:'CIO',status:'Open',due:plus(90),notes:'DR site under procurement'},
+    {id:uid(),title:'Payroll fraud via compromised vendor invoice flow',category:'Fraud',assetId:'—',likelihood:'3',impact:'4',treatment:'Mitigate',owner:'CFO',status:'Open',due:plus(60),notes:'Dual approval being rolled out'},
+    {id:uid(),title:'Regulatory fine — data-protection non-compliance',category:'Compliance',assetId:'Customer database',likelihood:'2',impact:'4',treatment:'Mitigate',owner:'Legal',status:'In progress',due:plus(75),notes:'Gap assessment 60% complete'},
+    {id:uid(),title:'Insider exfiltration of customer lists',category:'Insider',assetId:'Customer database',likelihood:'2',impact:'3',treatment:'Mitigate',owner:'CISO',status:'Open',due:plus(120),notes:'DLP pilot in design'},
+    {id:uid(),title:'Laptop theft with unencrypted local data',category:'Physical',assetId:'Laptop fleet (340)',likelihood:'3',impact:'2',treatment:'Accept',owner:'IT Ops',status:'Closed',due:'',notes:'BitLocker now enforced fleet-wide — risk closed'},
+  ];
+  S.incidents=[
+    {id:uid(),title:'Phishing wave impersonating HR',sev:'Medium',status:'Resolved',date:plus(-12),owner:'SOC',summary:'23 recipients, 2 clicks, 0 credential loss; sender domain blocked'},
+    {id:uid(),title:'Storefront credential-stuffing spike',sev:'High',status:'Contained',date:plus(-3),owner:'Digital lead',summary:'Rate-limiting + bot rules applied; monitoring continues'},
+    {id:uid(),title:'Lost laptop — sales team, airport',sev:'Low',status:'Open',date:plus(-1),owner:'IT Ops',summary:'Remote wipe issued; awaiting confirmation'},
+  ];
+  S.vendors=[
+    {id:uid(),name:'CloudHost Gulf',service:'IaaS hosting for storefront',access:'Privileged system access',tier:'Critical',review:plus(40),notes:'SOC 2 received'},
+    {id:uid(),name:'PayGate',service:'Payment processing',access:'Sensitive / regulated data',tier:'Critical',review:plus(100),notes:'PCI AOC on file'},
+    {id:uid(),name:'TalentSoft HR',service:'HR & payroll SaaS',access:'Sensitive / regulated data',tier:'High',review:plus(160),notes:''},
+    {id:uid(),name:'OfficeClean Co.',service:'Facilities',access:'No data access',tier:'Low',review:plus(300),notes:'Escorted access only'},
+  ];
+  S.tasks=[
+    {id:uid(),title:'Enable immutable backups for ERP & file servers',linked:'Risk: ransomware',owner:'IT Ops',priority:'Critical',due:plus(-5),status:'In progress'},
+    {id:uid(),title:'Disable legacy authentication in M365',linked:'Risk: account takeover',owner:'IT Ops',priority:'Critical',due:plus(10),status:'To do'},
+    {id:uid(),title:'Storefront penetration test',linked:'Risk: PII breach',owner:'Digital lead',priority:'High',due:plus(25),status:'To do'},
+    {id:uid(),title:'Dual-approval workflow for vendor payments',linked:'Risk: payroll fraud',owner:'Finance',priority:'High',due:plus(30),status:'In progress'},
+    {id:uid(),title:'Quarterly restore test — customer DB',linked:'Control: PR.DS / backups',owner:'IT Ops',priority:'Medium',due:plus(-2),status:'To do'},
+    {id:uid(),title:'Tabletop exercise — ransomware scenario',linked:'Control: RS.MA',owner:'CISO',priority:'Medium',due:plus(50),status:'To do'},
+  ];
+  S.controls={ 'GV.OC':3,'GV.RM':2,'GV.RR':3,'GV.PO':3,'GV.OV':2,'GV.SC':2,
+    'ID.AM':3,'ID.RA':2,'ID.IM':2,
+    'PR.AA':3,'PR.AT':3,'PR.DS':2,'PR.PS':3,'PR.IR':2,
+    'DE.CM':2,'DE.AE':2,
+    'RS.MA':2,'RS.AN':1,'RS.CO':2,'RS.MI':2,
+    'RC.RP':1,'RC.CO':1 };
+  save();go('dashboard');toast('Demo company loaded');
+};
+
+/* boot */
+counts();
+renderers.dashboard();
+renderers.policies();
+</script>
+</body>
+</html>
